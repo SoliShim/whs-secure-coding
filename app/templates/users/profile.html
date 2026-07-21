@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% set profile_user = profile %}
+{% block title %}{{ profile_user.display_name or profile_user.username }} · 바로마켓{% endblock %}
+{% block content %}
+<section class="page-hero page-hero-compact">
+  <div class="shell profile-hero">
+    <span class="avatar avatar-large" aria-hidden="true">{{ (profile_user.display_name or profile_user.username)[:1] }}</span>
+    <div class="profile-copy">
+      <div class="profile-title-row">
+        <div>
+          <p class="eyebrow">이웃 프로필</p>
+          <h1>{{ profile_user.display_name or profile_user.username }}</h1>
+          <p class="username">@{{ profile_user.username }}</p>
+        </div>
+        <span class="status-badge{% if profile_user.status and profile_user.status != 'active' %} status-warning{% endif %}">
+          {% if profile_user.status == 'suspended' %}이용 제한{% elif profile_user.status == 'dormant' %}휴면 계정{% else %}활동 중{% endif %}
+        </span>
+      </div>
+      <p class="profile-bio">{{ profile_user.bio or '아직 소개글을 작성하지 않았어요.' }}</p>
+      <div class="profile-stats" aria-label="사용자 활동 요약">
+        <span><strong>{{ product_count or 0 }}</strong> 등록 상품</span>
+        {% if profile_user.joined_label %}<span><strong>{{ profile_user.joined_label }}</strong> 가입</span>{% endif %}
+      </div>
+      <div class="button-row profile-actions">
+        {% if user and user.id == profile_user.id %}
+          <a class="button button-primary" href="/settings">프로필 수정</a>
+          <a class="button button-secondary" href="/my/products">내 상품 관리</a>
+        {% elif user and profile_user.status in [none, 'active'] %}
+          <a class="button button-primary" href="/chat?with_user={{ profile_user.id }}">1:1 채팅</a>
+        {% elif not user %}
+          <a class="button button-primary" href="/login">로그인하고 채팅</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="shell section-block profile-content">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">판매 중인 물건</p>
+      <h2>{{ profile_user.display_name or profile_user.username }}님의 상품</h2>
+    </div>
+  </div>
+  {% if products %}
+    <div class="product-grid product-grid-small">
+      {% for product in products %}
+        <article class="product-card">
+          <a class="product-image-wrap" href="/products/{{ product.id }}">
+            <img class="product-image" src="{% if product.image_filename %}/uploads/{{ product.image_filename|urlencode }}{% else %}/static/img/placeholder.svg{% endif %}" alt="{{ product.name }}" loading="lazy" width="640" height="480">
+            {% if product.status and product.status != 'available' %}<span class="product-state">{% if product.status == 'reserved' %}예약중{% elif product.status == 'sold' %}판매완료{% else %}{{ product.status }}{% endif %}</span>{% endif %}
+          </a>
+          <div class="product-card-body">
+            <h3><a href="/products/{{ product.id }}">{{ product.name }}</a></h3>
+            <p class="product-price">{{ "{:,}".format(product.price|int) }}원</p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state empty-state-compact">
+      <span class="empty-icon" aria-hidden="true">□</span>
+      <h3>공개된 상품이 없어요</h3>
+      <p>새 상품이 올라오면 이곳에서 확인할 수 있어요.</p>
+    </div>
+  {% endif %}
+
+  {% if user and user.id != profile_user.id %}
+    <details class="report-panel">
+      <summary>이 사용자를 신고해야 하나요?</summary>
+      <form class="form-stack form-stack-compact" action="/reports" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="target_type" value="user">
+        <input type="hidden" name="target_id" value="{{ profile_user.id }}">
+        <div class="field">
+          <label for="report-reason">신고 사유</label>
+          <textarea id="report-reason" name="reason" rows="3" minlength="10" maxlength="500" placeholder="관리자가 판단할 수 있도록 구체적으로 작성해 주세요." required></textarea>
+          <small>허위 신고나 반복 신고는 이용 제한 사유가 될 수 있습니다.</small>
+        </div>
+        <button class="button button-danger button-small" type="submit">신고 접수</button>
+      </form>
+    </details>
+  {% endif %}
+</section>
+{% endblock %}

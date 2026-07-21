@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}내 상품 관리 · 바로마켓{% endblock %}
+{% block content %}
+<section class="page-hero page-hero-compact">
+  <div class="shell page-title-row">
+    <div><p class="eyebrow">판매 현황</p><h1>내 상품 관리</h1><p>등록한 상품의 정보와 판매 상태를 한곳에서 관리하세요.</p></div>
+    <a class="button button-primary" href="/products/new">새 상품 등록</a>
+  </div>
+</section>
+
+<section class="shell section-block">
+  {% if summary %}
+    <div class="stat-grid">
+      <div class="stat-card"><span>전체</span><strong>{{ summary.total or 0 }}</strong><small>등록 상품</small></div>
+      <div class="stat-card"><span>판매 중</span><strong>{{ summary.available or 0 }}</strong><small>거래 가능</small></div>
+      <div class="stat-card"><span>예약 중</span><strong>{{ summary.reserved or 0 }}</strong><small>예약 상품</small></div>
+      <div class="stat-card"><span>판매 완료</span><strong>{{ summary.sold or 0 }}</strong><small>완료 거래</small></div>
+    </div>
+  {% endif %}
+
+  {% if products %}
+    <div class="manage-list">
+      {% for product in products %}
+        <article class="manage-card">
+          <a class="manage-image" href="/products/{{ product.id }}"><img src="{% if product.image_filename %}/uploads/{{ product.image_filename|urlencode }}{% else %}/static/img/placeholder.svg{% endif %}" alt="{{ product.name }}" width="320" height="240" loading="lazy"></a>
+          <div class="manage-copy">
+            <div class="manage-title"><h2><a href="/products/{{ product.id }}">{{ product.name }}</a></h2><span class="status-badge">{% if product.status == 'reserved' %}예약 중{% elif product.status == 'sold' %}판매 완료{% else %}판매 중{% endif %}</span></div>
+            <p class="product-price">{{ "{:,}".format(product.price|int) }}원</p>
+            <p class="manage-meta">{% if product.created_label %}{{ product.created_label }} 등록{% endif %}{% if product.view_count is defined %}<span>조회 {{ product.view_count }}</span>{% endif %}</p>
+          </div>
+          <div class="manage-actions">
+            <a class="button button-secondary button-small" href="/products/{{ product.id }}/edit">수정</a>
+            <form action="/products/{{ product.id }}/delete" method="post" data-confirm="상품을 삭제하면 복구할 수 없습니다. 정말 삭제할까요?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button class="button button-quiet button-small danger-text" type="submit">삭제</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">＋</span>
+      <h2>아직 등록한 상품이 없어요</h2>
+      <p>사용하지 않는 좋은 물건을 이웃에게 소개해 보세요.</p>
+      <a class="button button-primary" href="/products/new">첫 상품 등록하기</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

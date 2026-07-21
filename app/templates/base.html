@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#146c43">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="description" content="안전하고 간편한 동네 중고거래, 바로마켓">
+  <title>{% block title %}바로마켓{% endblock %}</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/js/app.js" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
+  {% set current_path = request.url.path %}
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="/" aria-label="바로마켓 홈">
+        <span class="brand-mark" aria-hidden="true">ㅂ</span>
+        <span>
+          <strong>바로마켓</strong>
+          <small>Tiny Second-hand Shopping Platform</small>
+        </span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-nav-toggle>
+        <span class="sr-only">메뉴 열기</span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+      <nav class="primary-nav" id="primary-navigation" aria-label="주요 메뉴" data-nav-menu>
+        <a href="/"{% if current_path == '/' %} aria-current="page"{% endif %}>상품 둘러보기</a>
+        {% if user %}
+          <a href="/my/products"{% if current_path == '/my/products' %} aria-current="page"{% endif %}>내 상품</a>
+          <a href="/chat"{% if current_path == '/chat' %} aria-current="page"{% endif %}>채팅</a>
+          <a href="/wallet"{% if current_path == '/wallet' %} aria-current="page"{% endif %}>바로지갑</a>
+          {% if user.is_admin or user.role == 'admin' %}
+            <a href="/admin"{% if current_path == '/admin' %} aria-current="page"{% endif %}>관리</a>
+          {% endif %}
+          <a class="nav-profile" href="/users/{{ user.username|urlencode }}" aria-label="내 프로필">
+            <span class="avatar avatar-small" aria-hidden="true">{{ (user.display_name or user.username)[:1] }}</span>
+            <span>{{ user.display_name or user.username }}</span>
+          </a>
+          <form class="nav-form" action="/logout" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button-quiet button-small" type="submit">로그아웃</button>
+          </form>
+        {% else %}
+          <a href="/login"{% if current_path == '/login' %} aria-current="page"{% endif %}>로그인</a>
+          <a class="button button-primary button-small" href="/register">회원가입</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  {% if (notice or error) and not is_error_page %}
+    <div class="shell message-stack" aria-live="polite">
+      {% if notice %}
+        <div class="alert alert-success" role="status">
+          <span class="alert-icon" aria-hidden="true">✓</span>
+          <p>{{ notice }}</p>
+          <button class="alert-dismiss" type="button" data-dismiss aria-label="알림 닫기">×</button>
+        </div>
+      {% endif %}
+      {% if error %}
+        <div class="alert alert-danger" role="alert">
+          <span class="alert-icon" aria-hidden="true">!</span>
+          <p>{{ error }}</p>
+          <button class="alert-dismiss" type="button" data-dismiss aria-label="오류 알림 닫기">×</button>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <main id="main-content" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <div>
+        <a class="footer-brand" href="/">바로마켓</a>
+        <p>안전한 거래를 먼저 생각하는 작은 중고거래 플랫폼</p>
+      </div>
+      <div class="footer-meta">
+        <span>보안 신고와 문의는 관리자에게 알려주세요.</span>
+        <span>© 2026 바로마켓</span>
+      </div>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

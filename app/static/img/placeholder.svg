@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" role="img" aria-labelledby="title description">
+  <title id="title">상품 이미지 준비 중</title>
+  <desc id="description">연한 초록색 배경 위에 상품 상자 모양이 있는 기본 이미지</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#edf8f1"/>
+      <stop offset="1" stop-color="#d8efe1"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" rx="36" fill="url(#background)"/>
+  <circle cx="480" cy="326" r="154" fill="#fff" opacity=".78"/>
+  <path d="M358 286 480 222l122 64-122 65-122-65Z" fill="#78bd91"/>
+  <path d="m358 286 122 65v137l-122-66V286Z" fill="#2e8b57"/>
+  <path d="m602 286-122 65v137l122-66V286Z" fill="#55aa75"/>
+  <path d="M431 248 552 312v43" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" opacity=".82"/>
+  <text x="480" y="570" fill="#24563a" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="34" font-weight="700" text-anchor="middle">상품 이미지 준비 중</text>
+</svg>

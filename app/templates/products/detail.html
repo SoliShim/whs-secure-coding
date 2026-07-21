@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} · 바로마켓{% endblock %}
+{% block content %}
+<div class="shell product-detail section-block">
+  <nav class="breadcrumbs" aria-label="현재 위치">
+    <a href="/">상품 목록</a><span aria-hidden="true">/</span><span aria-current="page">상품 상세</span>
+  </nav>
+  <div class="product-detail-grid">
+    <div class="product-detail-media">
+      <img src="{% if product.image_filename %}/uploads/{{ product.image_filename|urlencode }}{% else %}/static/img/placeholder.svg{% endif %}" alt="{{ product.name }}" width="960" height="720">
+      {% if product.status and product.status != 'available' %}<span class="detail-state">{% if product.status == 'reserved' %}예약중{% elif product.status == 'sold' %}판매완료{% else %}{{ product.status }}{% endif %}</span>{% endif %}
+    </div>
+    <article class="product-detail-copy">
+      <div class="product-detail-heading">
+        <p class="eyebrow">{{ product.category_label or '중고 상품' }}</p>
+        <h1>{{ product.name }}</h1>
+        <p class="detail-price">{{ "{:,}".format(product.price|int) }}원</p>
+        {% if product.created_at %}<time datetime="{{ product.created_at }}">{{ product.created_label or product.created_at }}</time>{% endif %}
+      </div>
+      <a class="seller-card" href="/users/{{ product.seller_username|urlencode }}">
+        <span class="avatar" aria-hidden="true">{{ (product.seller_display_name or product.seller_username)[:1] }}</span>
+        <span><small>판매자</small><strong>{{ product.seller_display_name or product.seller_username }}</strong><em>@{{ product.seller_username }}</em></span>
+        <span class="seller-arrow" aria-hidden="true">→</span>
+      </a>
+      <div class="detail-actions">
+        {% if user and can_manage %}
+          <a class="button button-primary" href="/products/{{ product.id }}/edit">상품 수정</a>
+          <form action="/products/{{ product.id }}/delete" method="post" data-confirm="상품을 삭제하면 복구할 수 없습니다. 정말 삭제할까요?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="button button-danger" type="submit">삭제</button>
+          </form>
+        {% elif user and product.status in [none, 'available', 'reserved'] %}
+          <a class="button button-primary" href="/chat?with_user={{ product.seller_id }}">판매자와 채팅</a>
+          <a class="button button-secondary" href="/wallet?recipient={{ product.seller_username|urlencode }}&amp;amount={{ product.price|int }}">바로지갑 송금</a>
+        {% elif not user %}
+          <a class="button button-primary" href="/login">로그인하고 채팅</a>
+        {% endif %}
+      </div>
+      <div class="safe-deal-note">
+        <strong>안전한 거래를 위해 확인하세요</strong>
+        <p>선입금 요구, 외부 메신저 유도, 개인정보 요구에 주의하세요. 의심스러운 상품은 아래에서 신고할 수 있습니다.</p>
+      </div>
+    </article>
+  </div>
+
+  <section class="detail-description" aria-labelledby="description-title">
+    <h2 id="description-title">상품 설명</h2>
+    <p>{{ product.description }}</p>
+  </section>
+
+  {% if user and user.id != product.seller_id %}
+    <details class="report-panel">
+      <summary>이 상품에 문제가 있나요?</summary>
+      <form class="form-stack form-stack-compact" action="/reports" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="target_type" value="product">
+        <input type="hidden" name="target_id" value="{{ product.id }}">
+        <div class="field">
+          <label for="report-reason">신고 사유</label>
+          <textarea id="report-reason" name="reason" rows="3" minlength="10" maxlength="500" placeholder="허위 상품, 금지 품목 등 문제를 구체적으로 작성해 주세요." required></textarea>
+        </div>
+        <button class="button button-danger button-small" type="submit">신고 접수</button>
+      </form>
+    </details>
+  {% endif %}
+</div>
+{% endblock %}

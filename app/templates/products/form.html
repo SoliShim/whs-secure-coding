@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% set editing = product and product.id %}
+{% block title %}{% if editing %}상품 수정{% else %}상품 등록{% endif %} · 바로마켓{% endblock %}
+{% block content %}
+<section class="page-hero page-hero-compact">
+  <div class="shell">
+    <p class="eyebrow">{% if editing %}판매 정보 관리{% else %}새로운 이웃 찾기{% endif %}</p>
+    <h1>{% if editing %}상품 수정{% else %}상품 등록{% endif %}</h1>
+    <p>정확하고 솔직한 정보가 안전하고 빠른 거래를 만듭니다.</p>
+  </div>
+</section>
+
+<div class="shell form-page section-block">
+  <form class="panel form-stack product-form" action="{% if editing %}/products/{{ product.id }}/edit{% else %}/products{% endif %}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="panel-heading">
+      <div><p class="eyebrow">필수 정보</p><h2>상품 정보</h2></div>
+      <span class="required-note"><span aria-hidden="true">*</span> 필수 입력</span>
+    </div>
+    <div class="field">
+      <label for="name">상품명 <span aria-hidden="true">*</span></label>
+      <input id="name" name="name" type="text" value="{{ form.name or product.name or '' }}" minlength="2" maxlength="80" placeholder="예: 깨끗한 기계식 키보드" required autofocus>
+    </div>
+    <div class="field">
+      <label for="description">상품 설명 <span aria-hidden="true">*</span></label>
+      <textarea id="description" name="description" rows="8" minlength="10" maxlength="2000" placeholder="구매 시기, 사용감, 구성품, 거래 방법을 자세히 적어 주세요." required>{{ form.description or product.description or '' }}</textarea>
+      <small>개인 연락처나 정확한 주소는 채팅에서도 꼭 필요한 경우에만 공유하세요.</small>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="price">가격 <span aria-hidden="true">*</span></label>
+        <div class="input-with-unit">
+          <input id="price" name="price" type="number" value="{{ form.price or product.price or '' }}" min="1" max="100000000" step="1" inputmode="numeric" required>
+          <span>원</span>
+        </div>
+      </div>
+      {% if editing %}
+        <div class="field">
+          <label for="status">판매 상태</label>
+          <select id="status" name="status" required>
+            <option value="available"{% if (form.status or product.status) == 'available' %} selected{% endif %}>판매 중</option>
+            <option value="reserved"{% if (form.status or product.status) == 'reserved' %} selected{% endif %}>예약 중</option>
+            <option value="sold"{% if (form.status or product.status) == 'sold' %} selected{% endif %}>판매 완료</option>
+          </select>
+        </div>
+      {% endif %}
+    </div>
+    <div class="field">
+      <label for="image">상품 사진{% if not editing %} <span aria-hidden="true">*</span>{% endif %}</label>
+      <div class="upload-box">
+        <img data-image-preview src="{% if product and product.image_filename %}/uploads/{{ product.image_filename|urlencode }}{% else %}/static/img/placeholder.svg{% endif %}" alt="{% if editing %}현재 상품 사진{% else %}상품 이미지 자리표시자{% endif %}" width="640" height="480">
+        <div>
+          <input id="image" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-image-input{% if not editing %} required{% endif %}>
+          <small>JPG, PNG, WebP 파일만 가능하며 서버에서 형식과 크기를 다시 검사합니다.</small>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions form-actions-split">
+      <a class="button button-secondary" href="{% if editing %}/products/{{ product.id }}{% else %}/{% endif %}">취소</a>
+      <button class="button button-primary" type="submit">{% if editing %}변경사항 저장{% else %}상품 등록{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

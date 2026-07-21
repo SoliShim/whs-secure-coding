@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}바로마켓 · 안전한 중고거래{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">안전한 동네 중고거래</p>
+      <h1>좋은 물건을,<br><span>좋은 이웃에게 바로.</span></h1>
+      <p>가입부터 채팅, 송금까지 꼭 필요한 기능만 담았습니다. 개인정보와 거래 안전은 타협하지 않습니다.</p>
+      <div class="button-row">
+        {% if user %}
+          <a class="button button-primary" href="/products/new">상품 등록하기</a>
+          <a class="button button-secondary" href="/my/products">내 상품 관리</a>
+        {% else %}
+          <a class="button button-primary" href="/register">무료로 시작하기</a>
+          <a class="button button-secondary" href="/login">로그인</a>
+        {% endif %}
+      </div>
+      <ul class="trust-list" aria-label="바로마켓 안전 기능">
+        <li><span aria-hidden="true">✓</span> 안전한 비밀번호 보호</li>
+        <li><span aria-hidden="true">✓</span> 신고·차단 관리</li>
+        <li><span aria-hidden="true">✓</span> 거래 내역 확인</li>
+      </ul>
+    </div>
+    <div class="hero-card" aria-label="바로마켓 이용 순서">
+      <div class="hero-card-top">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>바로 거래할 준비 완료</span>
+      </div>
+      <ol class="step-list">
+        <li><span>1</span><div><strong>상품을 찾아요</strong><small>이름으로 빠르게 검색</small></div></li>
+        <li><span>2</span><div><strong>안전하게 대화해요</strong><small>전체 채팅과 1:1 채팅</small></div></li>
+        <li><span>3</span><div><strong>거래를 마쳐요</strong><small>비밀번호 재확인 송금</small></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="shell section-block" aria-labelledby="product-heading">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">방금 올라온 상품</p>
+      <h2 id="product-heading">어떤 물건을 찾고 있나요?</h2>
+    </div>
+    {% if user %}<a class="text-link" href="/products/new">새 상품 등록 <span aria-hidden="true">→</span></a>{% endif %}
+  </div>
+  <form class="search-bar" action="/" method="get" role="search">
+    <label class="sr-only" for="product-search">상품 검색</label>
+    <span class="search-icon" aria-hidden="true">⌕</span>
+    <input id="product-search" name="q" type="search" value="{{ query or '' }}" maxlength="80" placeholder="상품 이름을 검색해 보세요" autocomplete="off">
+    <button class="button button-primary" type="submit">검색</button>
+  </form>
+
+  {% if products %}
+    <div class="product-grid">
+      {% for product in products %}
+        <article class="product-card">
+          <a class="product-image-wrap" href="/products/{{ product.id }}" aria-label="{{ product.name }} 상세 보기">
+            <img class="product-image" src="{% if product.image_filename %}/uploads/{{ product.image_filename|urlencode }}{% else %}/static/img/placeholder.svg{% endif %}" alt="{{ product.name }}" loading="lazy" width="640" height="480">
+            {% if product.status and product.status != 'available' %}
+              <span class="product-state">{% if product.status == 'reserved' %}예약중{% elif product.status == 'sold' %}판매완료{% else %}{{ product.status }}{% endif %}</span>
+            {% endif %}
+          </a>
+          <div class="product-card-body">
+            <p class="product-seller">{{ product.seller_display_name or product.seller_username }}</p>
+            <h3><a href="/products/{{ product.id }}">{{ product.name }}</a></h3>
+            <p class="product-price">{{ "{:,}".format(product.price|int) }}원</p>
+            {% if product.created_at %}<time class="product-time" datetime="{{ product.created_at }}">{{ product.created_label or product.created_at }}</time>{% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">⌕</span>
+      <h3>{% if query %}검색 결과가 없어요{% else %}아직 등록된 상품이 없어요{% endif %}</h3>
+      <p>{% if query %}다른 검색어로 다시 찾아보세요.{% else %}첫 번째 이웃에게 좋은 물건을 소개해 보세요.{% endif %}</p>
+      {% if user %}<a class="button button-primary" href="/products/new">상품 등록하기</a>{% endif %}
+    </div>
+  {% endif %}
+
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination" aria-label="상품 목록 페이지">
+      {% if pagination.has_prev %}<a href="/?q={{ query|urlencode }}&amp;page={{ pagination.prev_num }}" rel="prev">이전</a>{% endif %}
+      <span>{{ pagination.page }} / {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a href="/?q={{ query|urlencode }}&amp;page={{ pagination.next_num }}" rel="next">다음</a>{% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}관리자 대시보드 · 바로마켓{% endblock %}
+{% block content %}
+<section class="admin-hero">
+  <div class="shell page-title-row">
+    <div><p class="eyebrow eyebrow-light">운영자 전용</p><h1>관리자 대시보드</h1><p>신고와 사용자, 상품 상태를 근거에 따라 신중하게 관리하세요.</p></div>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+</section>
+
+<div class="shell admin-page section-block">
+  <section class="stat-grid" aria-label="플랫폼 현황">
+    <div class="stat-card"><span>사용자</span><strong>{{ counts.users or 0 }}</strong><small>전체 계정</small></div>
+    <div class="stat-card"><span>등록 상품</span><strong>{{ counts.products or 0 }}</strong><small>삭제 제외</small></div>
+    <div class="stat-card stat-card-alert"><span>미처리 신고</span><strong>{{ counts.pending_reports or 0 }}</strong><small>검토 필요</small></div>
+    <div class="stat-card"><span>누적 송금</span><strong>{{ counts.transfers or 0 }}</strong><small>완료 거래</small></div>
+  </section>
+
+  <section class="panel admin-section" aria-labelledby="reports-title">
+    <div class="panel-heading"><div><p class="eyebrow">운영 검토</p><h2 id="reports-title">신고 내역</h2></div><span class="count-badge">{{ reports|length if reports else 0 }}건</span></div>
+    {% if reports %}
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">미처리 신고 대상과 사유 및 처리 작업</caption>
+          <thead><tr><th scope="col">대상</th><th scope="col">신고 사유</th><th scope="col">신고자</th><th scope="col">접수</th><th scope="col">처리</th></tr></thead>
+          <tbody>
+            {% for report in reports %}
+              <tr>
+                <td>
+                  {% if report.target_username %}
+                    <a href="/users/{{ report.target_username|urlencode }}"><strong>{{ report.target_label }}</strong></a>
+                  {% elif report.target_product_id %}
+                    <a href="/products/{{ report.target_product_id }}"><strong>{{ report.target_label }}</strong></a>
+                  {% else %}
+                    <strong>{{ report.target_label or ('삭제된 대상 #' ~ report.target_id) }}</strong>
+                  {% endif %}
+                  <small>{{ '사용자' if report.target_type == 'user' else '상품' }}</small>
+                </td>
+                <td class="table-reason">{{ report.reason }}</td>
+                <td>{{ report.reporter_username }}</td>
+                <td>{{ report.created_label or report.created_at }}</td>
+                <td>
+                  <form class="inline-action" action="/admin/reports/{{ report.id }}/resolve" method="post" data-confirm="선택한 조치로 신고를 처리할까요?">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label class="sr-only" for="report-action-{{ report.id }}">처리 방법</label>
+                    <select id="report-action-{{ report.id }}" name="action" required>
+                      <option value="" selected disabled>조치 선택</option>
+                      <option value="dismiss">문제 없음</option>
+                      <option value="confirm">신고 확인·조치</option>
+                    </select>
+                    <button class="button button-primary button-small" type="submit">처리</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state empty-state-compact"><span class="empty-icon" aria-hidden="true">✓</span><h3>검토할 신고가 없어요</h3><p>모든 신고가 처리되었습니다.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="panel admin-section" aria-labelledby="users-title">
+    <div class="panel-heading"><div><p class="eyebrow">접근 권한</p><h2 id="users-title">사용자 관리</h2></div></div>
+    {% if users %}
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">사용자 계정 상태와 누적 신고 수 및 상태 변경 작업</caption>
+          <thead><tr><th scope="col">사용자</th><th scope="col">상태</th><th scope="col">신고</th><th scope="col">상태 변경</th></tr></thead>
+          <tbody>
+            {% for account in users %}
+              <tr>
+                <td><a class="table-user" href="/users/{{ account.username|urlencode }}"><span class="avatar avatar-small" aria-hidden="true">{{ (account.display_name or account.username)[:1] }}</span><span><strong>{{ account.display_name or account.username }}</strong><small>@{{ account.username }} · {{ account.role or 'user' }}</small></span></a></td>
+                <td><span class="status-badge{% if account.status != 'active' %} status-warning{% endif %}">{{ account.status }}</span></td>
+                <td>{{ account.report_count or 0 }}건</td>
+                <td>
+                  {% if account.role == 'admin' %}
+                    <span class="status-badge">보호된 관리자</span>
+                  {% else %}
+                    <form class="inline-action" action="/admin/users/{{ account.id }}/status" method="post" data-confirm="사용자 상태를 변경할까요? 변경 사유와 근거를 먼저 확인하세요.">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                      <label class="sr-only" for="user-status-{{ account.id }}">{{ account.username }} 상태</label>
+                      <select id="user-status-{{ account.id }}" name="status" required>
+                        <option value="active"{% if account.status == 'active' %} selected{% endif %}>활성</option>
+                        <option value="suspended"{% if account.status == 'suspended' %} selected{% endif %}>이용 정지</option>
+                      </select>
+                      <button class="button button-secondary button-small" type="submit">변경</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="table-empty">표시할 사용자가 없습니다.</p>{% endif %}
+  </section>
+
+  <section class="panel admin-section" aria-labelledby="products-title">
+    <div class="panel-heading"><div><p class="eyebrow">콘텐츠 노출</p><h2 id="products-title">상품 관리</h2></div></div>
+    {% if products %}
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">상품 노출 상태와 신고 수 및 노출 변경 작업</caption>
+          <thead><tr><th scope="col">상품</th><th scope="col">판매자</th><th scope="col">신고</th><th scope="col">노출 변경</th></tr></thead>
+          <tbody>
+            {% for item in products %}
+              <tr>
+                <td><a href="/products/{{ item.id }}"><strong>{{ item.name }}</strong></a><small>{{ "{:,}".format(item.price|int) }}원</small></td>
+                <td>{{ item.seller_username }}</td>
+                <td>{{ item.report_count or 0 }}건</td>
+                <td>
+                  <form class="inline-action" action="/admin/products/{{ item.id }}/visibility" method="post" data-confirm="상품 노출 상태를 변경할까요?">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <label class="sr-only" for="product-visible-{{ loop.index }}">{{ item.name }} 노출 상태</label>
+                    <select id="product-visible-{{ loop.index }}" name="visible" required>
+                      <option value="true"{% if not item.is_hidden %} selected{% endif %}>공개</option>
+                      <option value="false"{% if item.is_hidden %} selected{% endif %}>숨김</option>
+                    </select>
+                    <button class="button button-secondary button-small" type="submit">변경</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="table-empty">표시할 상품이 없습니다.</p>{% endif %}
+  </section>
+
+  <section class="panel admin-section" aria-labelledby="transfers-title">
+    <div class="panel-heading"><div><p class="eyebrow">불변 원장</p><h2 id="transfers-title">최근 가상 송금</h2></div></div>
+    {% if transfers %}
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">최근 가상 송금 내역</caption>
+          <thead><tr><th scope="col">번호</th><th scope="col">보낸 사용자</th><th scope="col">받는 사용자</th><th scope="col">금액</th><th scope="col">시각</th></tr></thead>
+          <tbody>
+            {% for transfer in transfers %}
+              <tr>
+                <td>#{{ transfer.id }}</td>
+                <td>@{{ transfer.sender_username }}</td>
+                <td>@{{ transfer.recipient_username }}</td>
+                <td>{{ transfer.amount|money }}</td>
+                <td>{{ transfer.created_at|datetime }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="table-empty">표시할 송금이 없습니다.</p>{% endif %}
+  </section>
+
+  <section class="panel admin-section" aria-labelledby="audit-title">
+    <div class="panel-heading"><div><p class="eyebrow">추적 가능성</p><h2 id="audit-title">최근 감사 이벤트</h2></div></div>
+    {% if audit_logs %}
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">최근 보안 및 관리자 감사 이벤트</caption>
+          <thead><tr><th scope="col">시각</th><th scope="col">행위자</th><th scope="col">이벤트</th><th scope="col">대상</th></tr></thead>
+          <tbody>
+            {% for event in audit_logs %}
+              <tr>
+                <td>{{ event.created_at|datetime }}</td>
+                <td>{{ '@' ~ event.actor_username if event.actor_username else 'system' }}</td>
+                <td><code>{{ event.event_type }}</code></td>
+                <td>{{ event.target_type or '-' }}{% if event.target_id %} #{{ event.target_id }}{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}<p class="table-empty">표시할 감사 이벤트가 없습니다.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

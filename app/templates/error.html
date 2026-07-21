@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ title or '오류' }} · 바로마켓{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="shell error-card">
+    <span class="error-code">{{ response_status or 500 }}</span>
+    <p class="eyebrow">잠시 멈춰 확인해 주세요</p>
+    <h1>{{ title or '요청을 처리하지 못했어요' }}</h1>
+    <p>{{ error_message or error or '잠시 후 다시 시도해 주세요. 같은 문제가 계속되면 관리자에게 알려주세요.' }}</p>
+    {% if request_id %}<small>요청 ID: {{ request_id }}</small>{% endif %}
+    <div class="button-row">
+      <a class="button button-primary" href="/">홈으로 돌아가기</a>
+      {% if user %}<a class="button button-secondary" href="/my/products">내 상품 보기</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

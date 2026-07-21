@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}채팅 · 바로마켓{% endblock %}
+{% block content %}
+<section class="chat-page">
+  <div class="shell chat-shell" data-chat-app data-ws-path="/ws/chat" data-current-user-id="{{ user.id }}" data-selected-recipient-id="{{ selected_user_id or '' }}">
+    <aside class="chat-sidebar" aria-label="채팅 채널">
+      <div class="chat-sidebar-heading">
+        <div><p class="eyebrow">이웃과 대화</p><h1>채팅</h1></div>
+        <span class="connection-badge" data-chat-connection>연결 중</span>
+      </div>
+      <nav class="channel-list" aria-label="대화 목록">
+        <button class="channel-button is-active" type="button" data-chat-channel data-recipient-id="" aria-current="true">
+          <span class="channel-avatar channel-global" aria-hidden="true">#</span>
+          <span><strong>전체 채팅</strong><small>모든 이웃과 대화</small></span>
+        </button>
+        <p class="channel-label">1:1 대화</p>
+        {% if contacts %}
+          {% for chat_user in contacts %}
+            {% if chat_user.id != user.id %}
+              <button class="channel-button" type="button" data-chat-channel data-recipient-id="{{ chat_user.id }}">
+                <span class="avatar avatar-small" aria-hidden="true">{{ (chat_user.display_name or chat_user.username)[:1] }}</span>
+                <span><strong>{{ chat_user.display_name or chat_user.username }}</strong><small>@{{ chat_user.username }}</small></span>
+              </button>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p class="channel-empty">대화 가능한 이웃이 아직 없어요.</p>
+        {% endif %}
+      </nav>
+      <div class="chat-safety">
+        <strong>개인정보를 지켜주세요</strong>
+        <p>계좌 비밀번호, 인증번호, 주민번호는 누구에게도 보내지 마세요.</p>
+      </div>
+    </aside>
+
+    <section class="chat-main" aria-labelledby="chat-current-label">
+      <header class="chat-header">
+        <div>
+          <span class="chat-kicker" data-chat-kicker>공개 채널</span>
+          <h2 id="chat-current-label" data-chat-title>전체 채팅</h2>
+        </div>
+        <p class="chat-status" data-chat-status role="status" aria-live="polite">서버에 안전하게 연결하고 있어요.</p>
+      </header>
+      <div class="message-list" data-chat-messages role="log" aria-live="polite" aria-relevant="additions" aria-label="채팅 메시지">
+        <div class="chat-loading" data-chat-placeholder>
+          <span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <p>대화 내역을 불러오는 중입니다.</p>
+        </div>
+      </div>
+      <form class="message-form" action="/chat" method="post" data-chat-form>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="sr-only" for="chat-body">메시지</label>
+        <textarea id="chat-body" name="body" rows="1" maxlength="500" placeholder="메시지를 입력하세요" data-chat-input required></textarea>
+        <button class="button button-primary" type="submit" data-chat-send disabled>보내기</button>
+      </form>
+      <p class="message-help">Enter로 전송 · Shift+Enter로 줄바꿈 · 최대 500자</p>
+    </section>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/chat.js" defer></script>{% endblock %}
