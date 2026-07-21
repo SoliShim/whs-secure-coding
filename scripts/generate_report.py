@@ -1171,7 +1171,7 @@ def section_testing() -> list[object]:
             "운영",
             "보안 헤더, fail-closed, 예외 은닉, 의존성 감사",
             "부분",
-            "원격 Actions, HTTPS/WSS, 백업 복구는 배포 후 검증",
+            "원격 Actions 통과; HTTPS/WSS, 백업 복구는 배포 후 검증",
         ],
     ]
     return (
@@ -1184,6 +1184,10 @@ def section_testing() -> list[object]:
             Preformatted(
                 "$ pytest -q\n36 passed, 2 warnings\nbranch coverage: 73%\n\n$ ruff check . && ruff format --check .\nAll checks passed / 26 files formatted\n\n$ bandit -q -r app\nexit 0\n\n$ pip-audit --local\nNo known vulnerabilities found",
                 STYLES["Code"],
+            ),
+            para(
+                "동일한 Ruff, format, Pytest, Bandit, strict pip-audit 게이트는 public 저장소의 push 트리거 GitHub Actions에서도 2026-07-22 성공했다.",
+                "Small",
             ),
             styled_table([["테스트 파일", "수", "범위"]] + files, [47 * mm, 13 * mm, 110 * mm]),
             para(

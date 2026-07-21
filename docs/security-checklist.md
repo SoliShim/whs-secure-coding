@@ -125,7 +125,7 @@
 | SC-COMMON-02 | WebSocket이 정확한 Origin·세션·CSRF를 검사 | 무인증, 악성 Origin, 잘못된 인증 프레임 자동 시험 | 통과 |
 | SC-COMMON-03 | 사용자 입력을 SQL 문자열에 보간하지 않음 | repository 질의 코드 검토, Bandit 0건, SQL 구문 모양 검색 자동 시험 | 통과 |
 | SC-COMMON-04 | CSP, nosniff, frame, referrer, permissions와 HTTPS HSTS | 일반 응답 헤더와 Secure 설정의 HSTS 자동 확인 | 통과 |
-| SC-COMMON-05 | 비밀·DB·업로드·백업·`.env`를 저장소에서 제외 | `.gitignore`, 빈 `.env.example`, production 약한 비밀 거부 설정 확인. public 원격 이력의 secret scan은 게시 후 확인 필요 | 부분 통과 |
+| SC-COMMON-05 | 비밀·DB·업로드·백업·`.env`를 저장소에서 제외 | `.gitignore`, 빈 `.env.example`, production 약한 비밀 거부 설정 확인. 게시 전후 `git ls-files`와 원격 이력에서 비밀·DB·업로드·강의 원본·개인 경로가 없음을 확인 | 통과 |
 | SC-COMMON-06 | 비밀번호·해시·세션·CSRF·민감 메시지를 로그/오류에 남기지 않음 | 일반화 500 자동 시험과 감사 metadata 허용값 코드 확인. 운영 로그 장시간 수집 검토는 미수행 | 부분 통과 |
 | SC-COMMON-07 | FK·CHECK·UNIQUE·rollback과 중요 테이블 불변성 | 연결별 FK, 스키마 제약, 송금·신고 자동 시험 확인. 별도 `PRAGMA integrity_check` 수행 기록은 없음 | 부분 통과 |
 | SC-COMMON-08 | 경로를 사용자가 결정하지 못하고 허용 루트·이름만 사용 | 이미지 저장명 서버 생성, 제공 이름 정규식, 안전 삭제 코드 확인. 인코딩 변형 traversal 자동 시험은 남음 | 부분 통과 |
@@ -148,13 +148,12 @@
 | WebSocket 가용성 | 사용자당 3개 cap·느린 수신자 병렬 fan-out 테스트 통과 | 통과 |
 | 실제 HTTPS/WSS 역방향 프록시 | 배포하지 않음 | 미검증 |
 | 고부하 멀티프로세스 | 단일 worker 설계로 범위 밖 | 미검증 |
-| GitHub Actions 원격 실행 | push 후 확인 필요 | 미검증 |
+| GitHub Actions 원격 실행 | Ruff, format, Pytest, Bandit, strict pip-audit | 통과(2026-07-22) |
 
 ## 6. 남은 외부·규모 검증
 
 1. 실제 HTTPS 역방향 프록시에서 `Secure`, HSTS, `wss://`, WebSocket upgrade, 정확한 Host/Origin 확인
 2. 현재 단일 worker·메모리 상태 설계의 범위를 넘는 고부하·멀티프로세스 시험
-3. public GitHub push 후 Actions의 Ruff, Pytest, Bandit, pip-audit 원격 성공 확인
 
 ## 7. 잔여 위험과 수용 근거
 

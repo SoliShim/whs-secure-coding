@@ -4,7 +4,7 @@
 
 강의 슬라이드 p.33과 녹음은 “정상 작동”만 확인하고 끝내지 말고, 실제 사용 중 불편·버그·서버 오류·잘못된 요구사항을 발견하면 적절한 개발 단계로 돌아가 다시 수행하라고 강조한다. 이 문서는 배포 후 Tiny Second-hand Shopping Platform을 안전하게 유지하기 위한 변경, CI, 백업·복구, 모니터링, 사고 대응 절차를 정의한다.
 
-계획과 현재 증거를 구분한다. 2026-07-22 로컬에서는 Pytest 36개(branch coverage 73%), Ruff, Bandit, pip-audit가 통과했다. 남은 외부 검증은 GitHub Actions 원격 실행, 실제 HTTPS/WSS 역방향 프록시, 현재 단일 worker 범위를 넘는 고부하 멀티프로세스다. 백업·복구와 모니터링 절은 실제 운영 환경이 생길 때 적용할 유지보수 계획이며, 수행하지 않은 운영 수치를 이미 달성한 것처럼 쓰지 않는다.
+계획과 현재 증거를 구분한다. 2026-07-22 로컬에서는 Pytest 36개(branch coverage 73%), Ruff, Bandit, pip-audit가 통과했고, public 저장소의 GitHub Actions에서도 같은 품질 게이트가 성공했다. 남은 외부 검증은 실제 HTTPS/WSS 역방향 프록시와 현재 단일 worker 범위를 넘는 고부하 멀티프로세스다. 백업·복구와 모니터링 절은 실제 운영 환경이 생길 때 적용할 유지보수 계획이며, 수행하지 않은 운영 수치를 이미 달성한 것처럼 쓰지 않는다.
 
 ## 2. 유지보수 원칙
 
@@ -78,7 +78,7 @@ flowchart LR
 5. pip-audit strict 의존성 취약점 감사
 6. 어느 단계든 실패하면 job 실패
 
-로컬에서 같은 품질 도구는 2026-07-22 모두 통과했다. 테스트에는 pure ASGI의 Content-Length/chunked 6MB 제한, WebSocket 동시 연결·느린 수신자, 서로 다른 키·동일 키 병렬 송금이 포함된다. GitHub Actions의 실제 원격 성공은 저장소 push 후 확인해야 한다. 현재 워크플로에는 별도 secret scanner와 멀티프로세스 부하 시험이 없으므로 public 이력 검토와 규모 확장 검증은 별도 운영 게이트다.
+로컬에서 같은 품질 도구는 2026-07-22 모두 통과했다. 테스트에는 pure ASGI의 Content-Length/chunked 6MB 제한, WebSocket 동시 연결·느린 수신자, 서로 다른 키·동일 키 병렬 송금이 포함된다. public 저장소의 push 트리거 GitHub Actions도 Ruff, Pytest, Bandit, strict pip-audit를 모두 통과했다. 워크플로 자체에는 별도 secret scanner와 멀티프로세스 부하 시험이 없으므로, 게시 직전 수행한 추적 파일·이력 수동 secret scan과 규모 확장 검증은 계속 별도 운영 게이트로 둔다.
 
 ### 6.1 필수 회귀 테스트 영역
 
@@ -264,7 +264,7 @@ CI 통과는 실제 HTTPS/WSS 역방향 프록시와 멀티프로세스 고부�
 
 - 외부 시연 URL의 실제 TLS 역방향 프록시에서 HTTPS/WSS, `Secure` cookie, HSTS, 정확한 Host/Origin과 WebSocket upgrade를 확인한다. **미배포**
 - 다중 worker/프로세스 전환 전 공유 rate limit, 연결 상태, pub/sub, SQLite 쓰기 경합을 고부하 환경에서 시험한다. **현재 단일 worker 범위 밖**
-- public 저장소 push 후 GitHub Actions의 Ruff, Pytest, Bandit, pip-audit 성공을 확인한다. **원격 실행 대기**
+- public 저장소의 GitHub Actions에서 Ruff, Pytest, Bandit, pip-audit 성공을 확인했다. **2026-07-22 통과**
 
 ## 14. 유지보수 기록 양식
 

@@ -148,13 +148,12 @@ CSRF/Origin, IDOR, XSS, 전체/DM, 병렬 송금, WebSocket 동시 연결·느�
 
 - 실제 역방향 프록시의 HTTPS/WSS, `Secure` cookie, HSTS, Host/Origin, WebSocket upgrade
 - 단일 worker 범위를 넘는 멀티프로세스 고부하와 공유 rate limit/pub-sub 설계
-- public push 후 GitHub Actions의 원격 품질 게이트
 
 외부 검증을 수행하면 날짜, 환경, 입력, 기대, 실제, 증거 위치를 추가한다.
 
 ### 5.5 저장소·산출물 검증
 
-- public push 전 현재 파일과 Git 이력에 `.env`, DB, 백업, 업로드, 로그, 비밀, 실제 개인정보가 없는지 확인
+- public push 전후 추적 파일과 Git 이력에 `.env`, DB, 백업, 업로드, 로그, 비밀, 실제 개인정보가 없는지 확인 완료
 - 강의 PDF·녹음 원본을 저장소에 포함하지 않음
 - README의 환경설정·실행·초기 관리자·테스트 방법을 새 환경에서 따라 함
 - 보고서의 GitHub 링크와 태그/커밋이 제출 버전을 가리키는지 확인
@@ -197,7 +196,8 @@ CSRF/Origin, IDOR, XSS, 전체/DM, 병렬 송금, WebSocket 동시 연결·느�
 | 2026-07-21~22 | Codex 병렬 아키텍처·구현 | 안전한 기술 구조와 코어 데이터 계약 및 7기능 구현 | FastAPI/Jinja/sqlite3/WebSocket, 세션·원장·신고 계약 | 코드·스키마·문서 필드 대조 완료 |
 | 2026-07-22 | Codex 테스트/보안 검토 | 정상·오류·권한·남용·동시성 회귀 검증 | 36 tests, 73% branch coverage, Ruff/Bandit/pip-audit | 실제 명령 출력 확인 |
 | 2026-07-22 | Codex 문서화 작업 | 요구사항·설계·STRIDE·체크리스트·유지보수·AI 기록 갱신 | `docs/*.md` | 최신 구현·테스트 수치와 잔여 위험 대조 |
-| 제출 전 | 제출자 검토 | GitHub 원격 상태와 PDF 제출 정보 최종 확인 | Actions 결과·repository URL·파일명 | 외부 정보 확정 후 확인 |
+| 2026-07-22 | Codex 공개 검증 | GitHub 원격 상태와 품질 게이트 확인 | public repository URL, Actions success, 70개 추적 파일·이력 누출 점검 | 공개 상태·원격 실행 결과 확인 완료 |
+| 제출 전 | 제출자 검토 | PDF 제출 정보 최종 확인 | 분반·이름·전화번호 뒷자리와 최종 파일명 | 제출자 정보 확정 후 확인 |
 
 ## 9. 최종 책임 선언
 

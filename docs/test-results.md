@@ -4,7 +4,7 @@
 
 2026-07-22 로컬 기준으로 자동 테스트 **36개가 모두 통과**했고, 애플리케이션 전체 branch coverage는 **73%**다. Ruff lint/format, Bandit, 현재 가상환경 대상 pip-audit도 모두 실패 없이 끝났다.
 
-이 결과는 가입, 상품, 전체·1:1 WebSocket 채팅, 신고·자동 격리·복구, 가상 KRW 송금, 검색, 관리자 RBAC라는 7개 최소 요구사항의 핵심 흐름과 주요 보안 회귀를 확인한다. Content-Length/chunked 본문 제한, WebSocket 동시 연결·느린 수신자, 서로 다른 키와 같은 키의 병렬 송금도 자동 검증했다. 다만 실제 HTTPS/WSS 역방향 프록시, 단일 프로세스 범위를 넘는 고부하 멀티프로세스, GitHub Actions 원격 실행은 별도 검증이 필요하다.
+이 결과는 가입, 상품, 전체·1:1 WebSocket 채팅, 신고·자동 격리·복구, 가상 KRW 송금, 검색, 관리자 RBAC라는 7개 최소 요구사항의 핵심 흐름과 주요 보안 회귀를 확인한다. Content-Length/chunked 본문 제한, WebSocket 동시 연결·느린 수신자, 서로 다른 키와 같은 키의 병렬 송금도 자동 검증했다. public 저장소의 GitHub Actions에서도 동일 게이트가 성공했다. 실제 HTTPS/WSS 역방향 프록시와 단일 프로세스 범위를 넘는 고부하 멀티프로세스는 별도 검증이 필요하다.
 
 ## 2. 검증 환경과 재현 명령
 
@@ -43,7 +43,7 @@
 | Bandit | 보안 finding 0, exit 0 | 통과 |
 | pip-audit | `No known vulnerabilities found` | 통과(2026-07-22 DB 기준) |
 
-pip-audit 결과는 실행 시점의 취약점 데이터와 설치된 환경에 대한 결과다. 이후 새 CVE가 공개될 수 있으므로 제출·배포 직전에 다시 실행해야 한다. GitHub Actions에는 requirements 파일을 대상으로 하는 strict 감사도 구성했지만, 원격 저장소에 push한 뒤의 실제 Actions 성공 여부는 별도 확인 대상이다.
+pip-audit 결과는 실행 시점의 취약점 데이터와 설치된 환경에 대한 결과다. 이후 새 CVE가 공개될 수 있으므로 제출·배포 직전에 다시 실행해야 한다. requirements 파일을 대상으로 한 GitHub Actions strict 감사도 2026-07-22 원격 실행에서 성공했다.
 
 ### 2.3 경고 해석
 
@@ -192,6 +192,6 @@ Pillow의 실제 format·크기·픽셀을 디코딩 전에 먼저 확인하고,
 |---|---|---|
 | HTTPS/WSS | 유효 TLS, `Secure` 쿠키, HSTS, `wss://`, 정확한 Origin | 미배포 |
 | 고부하 멀티프로세스 | 공유 rate limit·연결 상태·메시지 전달·DB 쓰기 부하 | 단일 worker 범위 밖 |
-| GitHub Actions | lint, format, pytest, Bandit, pip-audit 모두 성공 | push 후 확인 |
+| GitHub Actions | lint, format, pytest, Bandit, pip-audit 모두 성공 | 통과(2026-07-22) |
 
 완료된 자동 검증과 남은 수동 검증의 세부 체크 상태는 [security-checklist.md](security-checklist.md), 유지보수·복구 절차는 [maintenance.md](maintenance.md)를 따른다.
