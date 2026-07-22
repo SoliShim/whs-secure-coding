@@ -26,8 +26,8 @@ lint:
 	.venv/bin/ruff format --check .
 
 security-check:
-	.venv/bin/bandit -q -r app -x tests
-	.venv/bin/pip-audit -r requirements.txt
+	.venv/bin/bandit -q -r app
+	.venv/bin/pip-audit --local --strict
 
 clean:
 	find app tests -type d -name __pycache__ -prune -exec rm -r {} +

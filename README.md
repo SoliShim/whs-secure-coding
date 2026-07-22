@@ -1,8 +1,12 @@
 # whs-secure-coding
 
+[![CI](https://github.com/SoliShim/whs-secure-coding/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SoliShim/whs-secure-coding/actions/workflows/ci.yml)
+
 보안을 우선해 만든 **Tiny Second-hand Shopping Platform**입니다. FastAPI와 Jinja2로 서버 렌더링 UI를 제공하고, SQLite에 데이터를 저장하며, WebSocket으로 전체 채팅과 1:1 채팅을 처리합니다.
 
 이 프로젝트는 WhiteHat School 시큐어 코딩 과제의 개발 전 과정인 요구사항 분석, 설계, 구현, 보안 체크리스트·테스트, 유지보수를 함께 문서화합니다.
+
+공개 저장소: [SoliShim/whs-secure-coding](https://github.com/SoliShim/whs-secure-coding)
 
 > **가상 KRW 안내**
 >
@@ -18,7 +22,7 @@
 | 4. 악성 사용자·상품 차단 | 사용자·상품 신고, 신고자별 중복 차단, 가입 10분이 지난 계정의 고유 신고 3건 자동 격리, 관리자 검토·복구 |
 | 5. 사용자 간 송금 | 현재 비밀번호 재확인, 정수 가상 KRW 송금, 멱등 처리와 이중 원장 |
 | 6. 상품 검색 | 상품명·설명 검색과 페이지네이션, 바인딩 SQL |
-| 7. 관리자 전체 관리 | 사용자 상태, 상품 노출, 신고 처리, 거래·감사 데이터 관리 |
+| 7. 관리자 전체 관리 | 사용자 상태, 상품 노출, 신고 처리, 거래·감사 데이터 열람 |
 
 ## 보안 하이라이트
 
@@ -44,7 +48,7 @@
 
 ## 요구 환경
 
-- Python **3.12**
+- Python **3.12.x** (`pyproject.toml` 기준 3.13 미지원)
 - Git
 - Linux, macOS 또는 Windows의 WSL2 Ubuntu
 - 최신 브라우저 2개 또는 브라우저와 휴대폰: 다중 사용자 채팅 시연용
@@ -251,12 +255,13 @@ production에서는 다음 조건 중 하나라도 맞지 않으면 애플리케
 .venv/bin/ruff format --check .
 
 # Python 보안 패턴 검사
-.venv/bin/bandit -q -r app -x tests
+.venv/bin/bandit -q -r app
 
-# 현재 가상환경 전체의 알려진 취약점 확인
-.venv/bin/pip-audit --local
+# 설치된 개발 가상환경 전체의 알려진 취약점 확인
+.venv/bin/pip-audit --local --strict
 
-# 또는 runtime requirements를 별도 해석해 검사
+# 선택: CI처럼 개발 requirements를 새로 해석하거나 runtime만 별도로 검사
+.venv/bin/pip-audit -r requirements-dev.txt --strict
 .venv/bin/pip-audit -r requirements.txt
 ```
 
@@ -264,13 +269,29 @@ production에서는 다음 조건 중 하나라도 맞지 않으면 애플리케
 
 | 검사 | 결과 |
 |---|---:|
-| Pytest | **36 passed** (3.75초 기준 실행) |
+| Pytest | **36 passed** |
 | 전체 애플리케이션 coverage | **73%** (branch 포함) |
 | Ruff | 오류 0, 26개 Python 파일 포맷 일치 |
 | Bandit | 보안 이슈 0 |
 | pip-audit | 알려진 취약점 0 |
 
 의존성 취약점 DB와 코드는 계속 바뀝니다. 위 수치는 영구 보증이 아니므로 제출·배포 직전에 다시 실행하세요. `pip-audit`은 최신 취약점 조회를 위해 네트워크가 필요합니다.
+
+같은 품질 게이트는 [GitHub Actions CI](https://github.com/SoliShim/whs-secure-coding/actions/workflows/ci.yml)에서 `main` push, pull request, 수동 실행마다 수행합니다. CI는 Ruff lint/format, Pytest, Bandit, 개발 의존성 strict `pip-audit`를 순서대로 검사합니다. Dependabot은 pip와 GitHub Actions 업데이트를 매주 확인합니다.
+
+## 제출용 PDF 보고서 생성
+
+공개 저장소에는 개인정보가 없는 보고서 생성기만 포함합니다. 개발 의존성을 설치한 뒤 아래 예시의 반, 이름, 전화번호 뒷자리만 본인 정보로 바꿔 실행합니다.
+
+```bash
+.venv/bin/python scripts/generate_report.py \
+  --class-name 01반 \
+  --name 홍길동 \
+  --phone-last4 1234 \
+  --repo-url https://github.com/SoliShim/whs-secure-coding
+```
+
+결과는 `output/pdf/[WHS][secure-coding][01반]홍길동(1234).pdf` 형식으로 생성되며 파일명의 공백은 자동으로 제거됩니다. 로컬 `output/screenshots/`에 검증 이미지가 있으면 보고서에 사용하고, 없으면 이미지 절만 생략합니다. 생성된 PDF와 스크린샷은 개인정보·로컬 검증 자료이므로 `.gitignore`로 추적하지 않습니다. 자세한 내용은 [보고서 생성 안내](report/README.md)를 참고하세요.
 
 ## 관리 명령
 
@@ -292,6 +313,9 @@ production에서는 다음 조건 중 하나라도 맞지 않으면 애플리케
 
 ```text
 whs-secure-coding/
+├── .github/
+│   ├── workflows/ci.yml   # push·PR·수동 실행 품질 게이트
+│   └── dependabot.yml     # pip·GitHub Actions 주간 업데이트 확인
 ├── app/
 │   ├── routers/           # 인증, 상품, 신고, 지갑, 채팅, 관리자 HTTP/WS 라우트
 │   ├── templates/         # Jinja2 서버 렌더링 화면
@@ -307,14 +331,20 @@ whs-secure-coding/
 │   └── cli.py             # DB, 관리자, 데모, 세션 관리 명령
 ├── tests/                 # TestClient HTTP/WebSocket 보안 회귀 테스트
 ├── docs/                  # 요구사항, 설계, 위협 모델, 체크리스트, 유지보수, AI 활용
+├── report/                # 제출용 PDF 생성 안내
+├── scripts/
+│   └── generate_report.py # 제출 규칙에 맞는 PDF 생성기
 ├── app/data/              # 기본 런타임 DB·업로드 위치; 생성 데이터는 Git 제외
-├── output/                # 보고서·검증 산출물용 디렉터리
+├── output/
+│   ├── pdf/               # 로컬 제출 PDF; 생성 파일은 Git 제외
+│   └── screenshots/       # 로컬 검증 이미지; 생성 파일은 Git 제외
 ├── .env.example           # 비밀이 없는 설정 예시
-├── requirements.txt       # 고정된 런타임 의존성
-├── requirements-dev.txt   # 테스트·정적·보안 검사 도구
+├── requirements.txt       # 직접 런타임 의존성 버전 고정
+├── requirements-dev.txt   # 테스트·정적·보안 검사·PDF 생성 도구
 ├── pyproject.toml         # 프로젝트 및 pytest/coverage/Ruff 설정
 ├── Makefile               # 자주 쓰는 로컬 명령 단축키
-├── Dockerfile             # 비루트 단일 worker 컨테이너 기반
+├── Dockerfile             # 운영 설정·HTTPS 프록시가 필요한 배포 기반
+├── SECURITY.md            # 비공개 취약점 신고와 안전한 연구 정책
 └── LICENSE                # MIT License
 ```
 
@@ -322,10 +352,13 @@ whs-secure-coding/
 
 - WebSocket 연결 관리자와 속도 제한이 메모리에 있으므로 **Uvicorn worker 1개만 지원**합니다. 현재 프로세스 안에서는 사용자당 3개·전체 80개 연결 상한을 적용하지만, 다중 worker/서버의 고부하는 검증하지 않았습니다. 확장하려면 Redis 같은 공유 저장소와 메시지 브로커가 필요합니다.
 - SQLite는 단일 인스턴스·과제 시연 규모에 맞춘 선택입니다. 고가용성, 다중 지역, 대규모 동시 쓰기, 실제 금융 원장용이 아닙니다.
+- 일반 회원의 초기 가상 잔액 `100,000원`은 `wallet_balance`에 직접 설정되고 genesis/funding 원장 행은 만들지 않습니다. 현재 원장은 사용자 간 이체가 시작된 뒤의 변동만 감사하므로 실제 회계 시스템으로 확장하려면 초기 지급도 원장에 기록해야 합니다.
 - 로컬 rate limiter는 프로세스 재시작 시 초기화되고 분산 공격을 전역 집계하지 못합니다.
 - 업로드 파일은 로컬 파일시스템에 저장합니다. 여러 서버에서는 전용 객체 저장소와 악성 파일 스캔, 보존 정책이 추가로 필요합니다.
 - 신규 계정의 신고는 접수하되 가입 10분이 지나기 전에는 자동 격리 수에 넣지 않습니다. 그래도 장기 다계정 공모를 완전히 막지는 못하므로 관리자 검토와 출처별 안전 복구가 필요합니다.
 - 개발용 HTTP/WS는 전송 기밀성을 제공하지 않습니다. 공개 운영은 반드시 HTTPS/WSS를 사용해야 합니다.
+- 실제 HTTPS/WSS 역방향 프록시와 운영 백업·복구 리허설은 아직 수행하지 않았습니다.
+- 직접 의존성 버전과 GitHub Actions commit SHA는 고정했지만, 간접 의존성 lock/hash와 Docker base-image digest 고정은 운영 공급망 하드닝 항목으로 남아 있습니다.
 - 이 프로젝트는 교육용이며 실제 상거래·금융·개인정보 처리 서비스의 법률·가용성·감사 요구를 충족한다고 주장하지 않습니다.
 
 ## 개발 문서
